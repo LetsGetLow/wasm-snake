@@ -74,10 +74,6 @@ impl Board {
         self.height
     }
 
-    pub fn clear(&mut self) {
-        self.cells.fill(GameObject::Empty);
-    }
-
     pub fn draw_level(&mut self) {
         self.level_data.iter().enumerate().for_each(|(idx, char_byte)| {
             let game_object = if *char_byte == b'#' {
@@ -144,18 +140,6 @@ mod tests {
         let mut board = Board::new(5, 5, 2, 2);
         board.set_cell(10, 10, GameObject::Wall); // out of bounds
         assert_eq!(board.get_cell(10, 10), None);
-    }
-
-    #[test]
-    fn board_clears_correctly() {
-        let mut board = Board::new(5, 5, 2, 2);
-        board.set_cell(1, 1, GameObject::Wall);
-        board.clear();
-        for y in 0..5 {
-            for x in 0..5 {
-                assert_eq!(board.get_cell(x, y), Some(GameObject::Empty));
-            }
-        }
     }
 
     #[test]

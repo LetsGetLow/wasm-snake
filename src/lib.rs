@@ -15,7 +15,7 @@ pub fn start() {
     console_error_panic_hook::set_once();
 }
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 #[wasm_bindgen]
 pub enum Key {
     ArrowUp,
@@ -40,14 +40,13 @@ impl From<&str> for Key {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 #[wasm_bindgen]
 pub enum Direction {
     Up,
     Down,
     Left,
     Right,
-    Freeze,
     Invalid,
 }
 
@@ -58,8 +57,7 @@ impl From<Key> for Direction {
             Key::ArrowDown => Direction::Down,
             Key::ArrowLeft => Direction::Left,
             Key::ArrowRight => Direction::Right,
-            Key::Space => Direction::Freeze,
-            Key::Invalid => Direction::Invalid,
+            _ => Direction::Invalid,
         }
     }
 }

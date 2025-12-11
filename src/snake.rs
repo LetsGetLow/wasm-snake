@@ -16,7 +16,7 @@ impl Snake {
             body: VecDeque::from([(x, y)]),
             direction: Direction::Right,
             movement_accumulator: 0.0,
-            speed: 6.0,
+            speed: 2.0,
             grow_pending: 0,
         }
     }
@@ -35,13 +35,8 @@ impl Snake {
         self.direction = new_direction;
     }
 
-    pub fn move_forward(&mut self, board: &Board, delta_time: f32) -> bool {
-        if self.direction == Direction::Invalid || self.direction == Direction::Freeze {
-            return true;
-        }
-        let (head_x, head_y) = self.body[0];
-
-        let delta_secconds = delta_time / 1000.0;
+    pub fn move_forward(&mut self, board: &Board, delta_miliseconds: f32) -> bool {
+        let delta_secconds = delta_miliseconds / 1000.0;
         self.movement_accumulator += self.speed * delta_secconds;
         let distance = self.movement_accumulator.floor() as usize;
         if distance == 0 {
@@ -50,40 +45,9 @@ impl Snake {
         self.movement_accumulator -= distance as f32;
 
         for _ in 0..distance {
-            let new_head = match self.direction {
-                Direction::Up => {
-                    if head_y == 0 {
-                        (head_x, board.get_height() - 1)
-                    } else {
-                        (head_x, head_y - 1)
-                    }
-                }
-                Direction::Down => {
-                    if head_y == board.get_height() - 1 {
-                        (head_x, 0)
-                    } else {
-                        (head_x, head_y + 1)
-                    }
-                }
-                Direction::Left => {
-                    if head_x == 0 {
-                        (board.get_width() - 1, head_y)
-                    } else {
-                        (head_x - 1, head_y)
-                    }
-                }
-                Direction::Right => {
-                    if head_x == board.get_width() - 1 {
-                        (0, head_y)
-                    } else {
-                        (head_x + 1, head_y)
-                    }
-                }
-                _ => (head_x, head_y), // will never happen
-            };
-
+            let new_head = self.new_head_position(board, self.body[0].0, self.body[0].1);
             if board.is_wall(new_head.0, new_head.1) {
-                return false
+                return false;
             }
 
             self.body.push_front(new_head);
@@ -94,16 +58,183 @@ impl Snake {
             self.body.pop_back();
         }
 
-        return true;
+        true
+    }
+
+    fn new_head_position(&mut self, board: &Board, head_x: usize, head_y: usize) -> (usize, usize) {
+        match self.direction {
+            Direction::Up => {
+                if head_y == 0 {
+                    (head_x, board.get_height() - 1)
+                } else {
+                    (head_x, head_y - 1)
+                }
+            }
+            Direction::Down => {
+                if head_y == board.get_height() - 1 {
+                    (head_x, 0)
+                } else {
+                    (head_x, head_y + 1)
+                }
+            }
+            Direction::Left => {
+                if head_x == 0 {
+                    (board.get_width() - 1, head_y)
+                } else {
+                    (head_x - 1, head_y)
+                }
+            }
+            Direction::Right => {
+                if head_x == board.get_width() - 1 {
+                    (0, head_y)
+                } else {
+                    (head_x + 1, head_y)
+                }
+            }
+            _ => (head_x, head_y), // Should not happen, but makes the compiler happy
+        }
     }
 
     pub fn grow(&mut self, num_blocks: usize) {
         self.grow_pending += num_blocks;
     }
 
-    pub fn render(&self, board: &mut Board) {
+    pub fn get_head_position(&self) -> (usize, usize) {
+        self.body[0]
+    }
+
+    pub fn render_to_board(&self, board: &mut Board) {
         for &(x, y) in &self.body {
             board.set_cell(x, y, GameObject::Snake);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn snake_initializes_correctly() {
+        let snake = Snake::new(5, 5);
+        assert_eq!(snake.body.len(), 1);
+        assert_eq!(snake.body[0], (5, 5));
+        assert_eq!(snake.direction, Direction::Right);
+    }
+
+    #[test]
+    fn snake_head_position_is_correct() {
+        let snake = Snake::new(3, 4);
+        assert_eq!(snake.get_head_position(), (3, 4));
+    }
+
+    #[test]
+    fn snake_changes_direction_correctly() {
+        let mut snake = Snake::new(5, 5);
+        snake.change_direction(Key::ArrowUp);
+        assert_eq!(snake.direction, Direction::Up);
+        // Try to reverse direction (should not change)
+        snake.change_direction(Key::ArrowDown);
+        assert_eq!(snake.direction, Direction::Up);
+
+        snake.change_direction(Key::ArrowLeft);
+        assert_eq!(snake.direction, Direction::Left);
+        snake.change_direction(Key::ArrowRight);
+        assert_eq!(snake.direction, Direction::Left);
+
+        snake.change_direction(Key::ArrowDown);
+        assert_eq!(snake.direction, Direction::Down);
+        snake.change_direction(Key::ArrowUp);
+        assert_eq!(snake.direction, Direction::Down);
+
+        snake.change_direction(Key::ArrowRight);
+        assert_eq!(snake.direction, Direction::Right);
+        snake.change_direction(Key::ArrowLeft);
+        assert_eq!(snake.direction, Direction::Right);
+    }
+
+    #[test]
+    fn snake_moves_forward_correctly() {
+        let mut board = Board::new(10, 10, 1, 1);
+        let mut snake = Snake::new(5, 5);
+        snake.speed = 5.0; // 5 blocks per second
+        snake.move_forward(&board, 200.0); // 200
+        assert_eq!(snake.body[0], (6, 5)); // wraps around to (1, 5)
+
+        snake.change_direction(Key::ArrowDown);
+        snake.move_forward(&board, 200.0); // 200 ms
+        assert_eq!(snake.body[0], (6, 6));
+
+        snake.change_direction(Key::ArrowLeft);
+        snake.move_forward(&board, 400.0); // 400 ms
+        assert_eq!(snake.body[0], (4, 6));
+
+        snake.change_direction(Key::ArrowUp);
+        snake.move_forward(&board, 1000.0); // 1 second
+        assert_eq!(snake.body[0], (4, 1));
+    }
+
+    #[test]
+    fn snake_head_show_up_on_the_opposite_side_if_leave_board() {
+        let mut board = Board::new(10, 10, 1, 1);
+        let mut snake = Snake::new(9, 0);
+        snake.speed = 5.0; // 5 blocks per second
+        snake.move_forward(&board, 200.0);
+        assert_eq!(snake.body[0], (0, 0));
+
+        snake.change_direction(Key::ArrowUp);
+        snake.move_forward(&board, 200.0);
+        assert_eq!(snake.body[0], (0, 9));
+
+        snake.change_direction(Key::ArrowLeft);
+        snake.move_forward(&board, 200.0);
+        assert_eq!(snake.body[0], (9, 9));
+
+        snake.change_direction(Key::ArrowDown);
+        snake.move_forward(&board, 200.0);
+        assert_eq!(snake.body[0], (9, 0));
+    }
+
+    #[test]
+    fn snake_grows_correctly() {
+        let mut snake = Snake::new(5, 5);
+        snake.grow(3);
+
+        assert_eq!(snake.grow_pending, 3);
+
+        let mut board = Board::new(10, 10, 1, 1);
+        snake.move_forward(&board, 1000.0); // Move 5 blocks
+        assert_eq!(snake.body.len(), 4); // Initial + 3 grown
+    }
+
+    #[test]
+    fn snake_detects_wall_collision() {
+        let mut board = Board::new(5, 5, 1, 1);
+        let level_data = b"#####
+#   #
+# # #
+#   #
+#####";
+        board.set_level_data(level_data).unwrap();
+
+        let mut snake = Snake::new(1, 1);
+        assert!(snake.move_forward(&board, 200.0)); // Move to (2,1)
+        snake.change_direction(Key::ArrowDown);
+        assert!(!snake.move_forward(&board, 200.0)); // Move to (2,2) which is a wall
+    }
+
+    #[test]
+    fn snake_renders_to_board_correctly() {
+        let mut board = Board::new(10, 10, 1, 1);
+        let mut snake = Snake::new(2, 2);
+        snake.speed = 1.0;
+        snake.grow(2);
+        let mut board = Board::new(10, 10, 1, 1);
+        snake.move_forward(&board, 1000.0); // Move to (3,2)
+        snake.move_forward(&board, 1000.0); // Move to (4,2)
+        snake.render_to_board(&mut board);
+        assert_eq!(board.get_cell(4, 2), Some(GameObject::Snake));
+        assert_eq!(board.get_cell(3, 2), Some(GameObject::Snake));
+        assert_eq!(board.get_cell(2, 2), Some(GameObject::Snake));
     }
 }

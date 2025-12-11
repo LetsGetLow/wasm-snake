@@ -85,7 +85,7 @@ impl GameWasm {
     #[wasm_bindgen]
     pub fn render(&mut self) {
         self.board.draw_level();
-        self.snake.render(&mut self.board);
+        self.snake.render_to_board(&mut self.board);
         self.board
             .render_to_buffer(self.screen_buffer.as_mut_slice());
     }
