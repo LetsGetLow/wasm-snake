@@ -198,6 +198,7 @@ mod tests {
     #[test]
     fn snake_grows_correctly() {
         let mut snake = Snake::new(5, 5);
+        snake.speed = 5.0;
         snake.grow(3);
 
         assert_eq!(snake.grow_pending, 3);
@@ -218,6 +219,7 @@ mod tests {
         board.set_level_data(level_data).unwrap();
 
         let mut snake = Snake::new(1, 1);
+        snake.speed = 5.0; // 5 blocks per second
         assert!(snake.move_forward(&board, 200.0)); // Move to (2,1)
         snake.change_direction(Key::ArrowDown);
         assert!(!snake.move_forward(&board, 200.0)); // Move to (2,2) which is a wall
