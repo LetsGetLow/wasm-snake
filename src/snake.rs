@@ -82,7 +82,7 @@ impl Snake {
                 _ => (head_x, head_y), // will never happen
             };
 
-            if board.wall_collides(new_head.0, new_head.1) {
+            if board.is_wall(new_head.0, new_head.1) {
                 return false
             }
 

@@ -4,9 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "build:rs": "wasm-pack build --target web --out-dir ./wasm",
+    "clean": "rm -rf dist node_modules ../wasm",
+    "dev": "bun run build:rs && vite",
+    "build": "bun run build:rs && tsc && vite build",
+    "build:rs": "wasm-pack build --release --target web --out-dir ./wasm",
     "preview": "vite preview"
   },
   "dependencies": {
