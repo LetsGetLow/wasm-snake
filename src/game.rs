@@ -11,7 +11,7 @@ const GRID_HEIGHT: usize = 100;
 
 const INITIAL_SNAKE_LENGTH: usize = 5;
 
-const SPEED_INC: f32 = 0.5;
+const SPEED_INC: f32 = 0.05;
 
 #[wasm_bindgen]
 pub struct GameWasm {
