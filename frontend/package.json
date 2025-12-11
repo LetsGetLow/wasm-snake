@@ -10,10 +10,8 @@
     "build:rs": "wasm-pack build --release --target web --out-dir ./wasm",
     "preview": "vite preview"
   },
-  "dependencies": {
-    "snake-wasm": "file:../wasm"
-  },
   "devDependencies": {
+    "snake-wasm": "file:../wasm",
     "typescript": "~5.9.3",
     "vite": "^7.2.4",
     "vitest": "^4.0.15",

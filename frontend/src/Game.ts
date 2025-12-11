@@ -6,6 +6,8 @@ class Game {
 
     private readonly ctx: CanvasRenderingContext2D | null
 
+    private started: boolean = false
+
     private showPerformanceInfo: boolean = false
     private wasm: any
     private wasmGame: GameWasm | null = null
@@ -53,7 +55,7 @@ class Game {
                 // console.log(e.code)
                 this.wasmGame?.key_down(e.code)
             })
-        }).catch(err => {
+        }).catch((err: any) => {
             console.error('Error initializing WASM module:', err)
         })
         return canvas
@@ -132,9 +134,15 @@ class Game {
         } else if (GameState.Paused === gameState) {
             this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
             this.ctx.fillRect(0, 0, this.width, this.height)
-            this.ctx.fillStyle = 'yellow'
             this.ctx.font = `${fontSize}px Arial`
-            this.ctx.fillText('Paused', this.width / 2, this.height / 2)
+            if (!this.started) {
+                this.ctx.fillStyle = 'lightgreen'
+                this.ctx.fillText('Press any space to start', this.width / 2, this.height / 2)
+            } else {
+                this.ctx.fillStyle = 'yellow'
+                this.ctx.fillText('Paused', this.width / 2, this.height / 2)}
+        } else if (GameState.Running === gameState) {
+            this.started = true
         }
         this.ctx.textAlign = prevAlign
         this.ctx.textBaseline = prevBaseline
