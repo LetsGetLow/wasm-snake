@@ -58,12 +58,12 @@ impl Board {
         }
     }
 
-    pub fn get_cell(&self, x: usize, y: usize) -> GameObject {
+    pub fn get_cell(&self, x: usize, y: usize) -> Option<GameObject> {
         if x < self.width && y < self.height {
             let idx = self.xy_to_index(x, y);
-            self.cells[idx]
+            Some(self.cells[idx])
         } else {
-            GameObject::Empty
+            None
         }
     }
 
@@ -89,7 +89,7 @@ impl Board {
         });
     }
 
-    pub fn wall_collides(&self, x: usize, y: usize) -> bool {
+    pub fn is_wall(&self, x: usize, y: usize) -> bool {
         let idx = self.xy_to_index(x, y);
         self.level_data[idx] == b'#'
     }
@@ -127,7 +127,7 @@ mod tests {
         assert_eq!(board.get_height(), 10);
         for y in 0..10 {
             for x in 0..10 {
-                assert_eq!(board.get_cell(x, y), GameObject::Empty);
+                assert_eq!(board.get_cell(x, y), Some(GameObject::Empty));
             }
         }
     }
@@ -136,7 +136,14 @@ mod tests {
     fn board_can_manage_cells() {
         let mut board = Board::new(5, 5, 2, 2);
         board.set_cell(2, 2, GameObject::Wall);
-        assert_eq!(board.get_cell(2, 2), GameObject::Wall);
+        assert_eq!(board.get_cell(2, 2), Some(GameObject::Wall));
+    }
+
+    #[test]
+    fn board_handles_out_of_bounds_cells() {
+        let mut board = Board::new(5, 5, 2, 2);
+        board.set_cell(10, 10, GameObject::Wall); // out of bounds
+        assert_eq!(board.get_cell(10, 10), None);
     }
 
     #[test]
@@ -146,9 +153,33 @@ mod tests {
         board.clear();
         for y in 0..5 {
             for x in 0..5 {
-                assert_eq!(board.get_cell(x, y), GameObject::Empty);
+                assert_eq!(board.get_cell(x, y), Some(GameObject::Empty));
             }
         }
+    }
+
+    #[test]
+    fn board_fails_on_invalid_level_data() {
+        let mut board = Board::new(5, 5, 2, 2);
+        let invalid_level_data = b"#####
+#   #
+# # #"; // too short
+        let result = board.set_level_data(invalid_level_data);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn board_can_detect_wall_collision() {
+        let mut board = Board::new(5, 5, 2, 2);
+        let level_data = b"#####
+#   #
+# # #
+#   #
+#####";
+        board.set_level_data(level_data).unwrap();
+        assert!(board.is_wall(0, 0));
+        assert!(!board.is_wall(1, 1));
+        assert!(board.is_wall(2, 2));
     }
 
     #[test]
@@ -166,10 +197,80 @@ mod tests {
 ##########";
 
         board.set_level_data(level_data).unwrap();
-
         board.draw_level();
-        assert_eq!(board.get_cell(0, 0), GameObject::Wall);
-        assert_eq!(board.get_cell(1, 1), GameObject::Empty);
-        assert_eq!(board.get_cell(9, 9), GameObject::Wall);
+
+        for y in 0..10 {
+            for x in 0..10 {
+                if board.is_wall(x, y) {
+                    assert_eq!(board.get_cell(x, y), Some(GameObject::Wall));
+                } else {
+                    assert_eq!(board.get_cell(x, y), Some(GameObject::Empty));
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn board_renders_to_buffer_correctly() {
+        const CELL_WIDTH: usize = 2;
+        const CELL_HEIGHT: usize = 2;
+        let mut board = Board::new(2, 2, CELL_WIDTH, CELL_HEIGHT);
+        board.set_cell(0, 0, GameObject::Snake);
+        board.set_cell(1, 0, GameObject::Food);
+        board.set_cell(0, 1, GameObject::Wall);
+        board.set_cell(1, 1, GameObject::Empty);
+
+        let mut buffer = vec![0; 2 * 2 * CELL_WIDTH * CELL_HEIGHT * 4]; // width * height * cell_width * cell_height * 4 (RGBA)
+        board.render_to_buffer(&mut buffer);
+
+        // Check colors in the buffer
+        let snake_color = Color::from(GameObject::Snake);
+        let food_color = Color::from(GameObject::Food);
+        let wall_color = Color::from(GameObject::Wall);
+        let empty_color = Color::from(GameObject::Empty);
+
+        // Top-left cell (Snake)
+        for y in 0..2 {
+            for x in 0..2 {
+                let index = (y * 4 + x) * 4;
+                assert_eq!(buffer[index], snake_color.r);
+                assert_eq!(buffer[index + 1], snake_color.g);
+                assert_eq!(buffer[index + 2], snake_color.b);
+                assert_eq!(buffer[index + 3], snake_color.a);
+            }
+        }
+
+        // Top-right cell (Food)
+        for y in 0..2 {
+            for x in 2..4 {
+                let index = (y * 4 + x) * 4;
+                assert_eq!(buffer[index], food_color.r);
+                assert_eq!(buffer[index + 1], food_color.g);
+                assert_eq!(buffer[index + 2], food_color.b);
+                assert_eq!(buffer[index + 3], food_color.a);
+            }
+        }
+
+        // Bottom-left cell (Wall)
+        for y in 2..4 {
+            for x in 0..2 {
+                let index = (y * 4 + x) * 4;
+                assert_eq!(buffer[index], wall_color.r);
+                assert_eq!(buffer[index + 1], wall_color.g);
+                assert_eq!(buffer[index + 2], wall_color.b);
+                assert_eq!(buffer[index + 3], wall_color.a);
+            }
+        }
+
+        // Bottom-right cell (Empty)
+        for y in 2..4 {
+            for x in 2..4 {
+                let index = (y * 4 + x) * 4;
+                assert_eq!(buffer[index], empty_color.r);
+                assert_eq!(buffer[index + 1], empty_color.g);
+                assert_eq!(buffer[index + 2], empty_color.b);
+                assert_eq!(buffer[index + 3], empty_color.a);
+            }
+        }
     }
 }
