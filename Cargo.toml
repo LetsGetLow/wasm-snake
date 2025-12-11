@@ -1,0 +1,19 @@
+[package]
+name = "wasm-snake"
+description = "A simple Snake game implemented in Rust and compiled to WebAssembly"
+license = "MIT"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+fastrand = "2.3.0"
+wasm-bindgen = "0.2"
+console_error_panic_hook = "0.1.7"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 2
