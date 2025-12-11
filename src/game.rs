@@ -1,14 +1,17 @@
+use crate::board::Board;
+use crate::food::FoodManager;
+use crate::snake::Snake;
+use crate::{GameState, Key};
 use alloc::vec;
 use alloc::vec::Vec;
-use crate::board::Board;
-use crate::snake::Snake;
-use crate::{GameObject, GameState, Key};
 use wasm_bindgen::prelude::wasm_bindgen;
 
 const GRID_WIDTH: usize = 100;
 const GRID_HEIGHT: usize = 100;
 
 const INITIAL_SNAKE_LENGTH: usize = 5;
+
+const SPEED_INC: f32 = 0.5;
 
 #[wasm_bindgen]
 pub struct GameWasm {
@@ -17,6 +20,7 @@ pub struct GameWasm {
     game_state: GameState,
     snake: Snake,
     board: Board,
+    food_manager: FoodManager,
 }
 
 #[wasm_bindgen]
@@ -32,7 +36,10 @@ impl GameWasm {
         board.set_level_data(level_data).unwrap();
 
         let mut snake = Snake::new(GRID_WIDTH / 2, GRID_HEIGHT / 2);
-        snake.grow(INITIAL_SNAKE_LENGTH);
+        snake.grow(INITIAL_SNAKE_LENGTH - 1);
+
+        let mut food_manager = FoodManager::new();
+        food_manager.spawn_food(&board, &snake);
 
         GameWasm {
             score: 0,
@@ -40,6 +47,7 @@ impl GameWasm {
             game_state: GameState::Paused,
             snake,
             board,
+            food_manager,
         }
     }
 
@@ -74,17 +82,25 @@ impl GameWasm {
             self.game_state = GameState::GameOver;
             return;
         }
-        self.board.set_cell(0, 0, GameObject::Food);
-        self.board.set_cell(
-            self.board.get_width(),
-            self.board.get_height(),
-            GameObject::Wall,
-        );
+
+        let (head_x, head_y) = self.snake.get_head_pos();
+        if self.food_manager.is_food_at(head_x, head_y) {
+            self.snake_eats_food(head_x, head_y);
+        }
+    }
+
+    fn snake_eats_food(&mut self, x: usize, y: usize) {
+        self.snake.grow(2);
+        self.snake.increase_speed(SPEED_INC);
+        self.food_manager.take_food(x, y);
+        self.update_score(10);
+        self.food_manager.spawn_food(&self.board, &self.snake);
     }
 
     #[wasm_bindgen]
     pub fn render(&mut self) {
         self.board.draw_level();
+        self.food_manager.render_foods_to_board(&mut self.board);
         self.snake.render_to_board(&mut self.board);
         self.board
             .render_to_buffer(self.screen_buffer.as_mut_slice());

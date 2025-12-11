@@ -21,6 +21,10 @@ impl Snake {
         }
     }
 
+    pub fn increase_speed(&mut self, increment: f32) {
+        self.speed += increment;
+    }
+
     pub fn change_direction(&mut self, key: Key) {
         let new_direction: Direction = key.into();
         // Prevent the snake from reversing
@@ -99,7 +103,7 @@ impl Snake {
         self.grow_pending += num_blocks;
     }
 
-    pub fn get_head_position(&self) -> (usize, usize) {
+    pub fn get_head_pos(&self) -> (usize, usize) {
         self.body[0]
     }
 
@@ -129,7 +133,7 @@ mod tests {
     #[test]
     fn snake_head_position_is_correct() {
         let snake = Snake::new(3, 4);
-        assert_eq!(snake.get_head_position(), (3, 4));
+        assert_eq!(snake.get_head_pos(), (3, 4));
     }
 
     #[test]

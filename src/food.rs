@@ -14,7 +14,7 @@ impl Food {
     }
 }
 
-struct FoodManager {
+pub struct FoodManager {
     foods: Vec<Food>,
 }
 
@@ -35,13 +35,13 @@ impl FoodManager {
         self.foods.iter().any(|food| food.x == x && food.y == y)
     }
 
-    fn render_foods_to_board(&self, board: &mut Board) {
+    pub fn render_foods_to_board(&self, board: &mut Board) {
         for food in &self.foods {
             board.set_cell(food.x, food.y, GameObject::Food);
         }
     }
 
-    fn spawn_food(&mut self, board: &Board, snake: &Snake) {
+    pub fn spawn_food(&mut self, board: &Board, snake: &Snake) {
         loop {
             let x = fastrand::usize(0..board.get_width());
             let y = fastrand::usize(0..board.get_height());
