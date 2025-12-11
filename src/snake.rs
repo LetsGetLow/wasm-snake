@@ -2,6 +2,8 @@ use crate::board::Board;
 use crate::{Direction, GameObject, Key};
 use alloc::collections::VecDeque;
 
+const INITIAL_SPEED: f32 = 3.0; // cells per second
+
 pub struct Snake {
     body: VecDeque<(usize, usize)>,
     direction: Direction,
@@ -16,7 +18,7 @@ impl Snake {
             body: VecDeque::from([(x, y)]),
             direction: Direction::Right,
             movement_accumulator: 0.0,
-            speed: 2.0,
+            speed: INITIAL_SPEED,
             grow_pending: 0,
         }
     }
@@ -49,12 +51,18 @@ impl Snake {
         self.movement_accumulator -= distance as f32;
 
         for _ in 0..distance {
-            let new_head = self.new_head_position(board, self.body[0].0, self.body[0].1);
-            if board.is_wall_at(new_head.0, new_head.1) {
+            let (head_x, head_y) = self.body[0];
+            let (new_head_x, new_head_y) = self.new_head_position(board, head_x, head_y);
+
+            if board.is_wall_at(new_head_x, new_head_y) {
                 return false;
             }
 
-            self.body.push_front(new_head);
+            if self.is_snake_at(new_head_x, new_head_y) {
+                return false;
+            }
+
+            self.body.push_front((new_head_x, new_head_y));
             if self.grow_pending > 0 {
                 self.grow_pending -= 1;
                 continue;
