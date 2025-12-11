@@ -2,7 +2,8 @@ use crate::board::Board;
 use crate::{Direction, GameObject, Key};
 use alloc::collections::VecDeque;
 
-const INITIAL_SPEED: f32 = 3.0; // cells per second
+const INITIAL_SPEED: f32 = 5.0; // cells per second
+const MAX_SPEED: f32 = 40.0; // cells per second
 
 pub struct Snake {
     body: VecDeque<(usize, usize)>,
@@ -25,6 +26,10 @@ impl Snake {
 
     pub fn increase_speed(&mut self, increment: f32) {
         self.speed += increment;
+        if self.speed > MAX_SPEED {
+            self.speed = MAX_SPEED;
+            return;
+        }
     }
 
     pub fn change_direction(&mut self, key: Key) {
@@ -241,8 +246,28 @@ mod tests {
     }
 
     #[test]
-    fn snake_renders_to_board_correctly() {
+    fn snake_detects_self_collision() {
         let mut board = Board::new(10, 10, 1, 1);
+        let mut snake = Snake::new(5, 5);
+        snake.speed = 1.0;
+        snake.grow(4); // Grow to length 5
+
+        // Move right
+        snake.move_forward(&board, 1000.0);
+        // Move down
+        snake.change_direction(Key::ArrowDown);
+        snake.move_forward(&board, 1000.0);
+        // Move left
+        snake.change_direction(Key::ArrowLeft);
+        snake.move_forward(&board, 1000.0);
+        // Move up - this should cause a collision with itself
+        snake.change_direction(Key::ArrowUp);
+        assert!(!snake.move_forward(&board, 1000.0));
+    }
+
+    #[test]
+    fn snake_renders_to_board_correctly() {
+        let board = Board::new(10, 10, 1, 1);
         let mut snake = Snake::new(2, 2);
         snake.speed = 2.0;
         snake.grow(2);
