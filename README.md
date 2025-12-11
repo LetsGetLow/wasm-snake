@@ -8,12 +8,9 @@ is
 possible without WegGL or wgpu.
 
 I used the project to test performance of WASM in the browser without WebGL or wgpu in order to see if it is possible to
-create
-real-time games with complex logic running in WASM in order to create a Doom clone. It turns out that it is indeed
-possible to
-achieve high frame rates with WASM even without hardware acceleration for rendering. Especially Chrome seems to be very
-well
-optimized for WASM performance.
+create real-time games with complex logic running in WASM in order to create a Doom clone. It turns out that it is indeed
+possible to achieve high frame rates with WASM even without hardware acceleration for rendering. Especially Chrome seems
+to be very well optimized for WASM performance.
 
 The game runs at a solid 150+ FPS in Chrome on a 2000x2000 px canvas.
 
