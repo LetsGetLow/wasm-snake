@@ -85,7 +85,7 @@ impl Board {
         });
     }
 
-    pub fn is_wall(&self, x: usize, y: usize) -> bool {
+    pub fn is_wall_at(&self, x: usize, y: usize) -> bool {
         let idx = self.xy_to_index(x, y);
         self.level_data[idx] == b'#'
     }
@@ -161,9 +161,9 @@ mod tests {
 #   #
 #####";
         board.set_level_data(level_data).unwrap();
-        assert!(board.is_wall(0, 0));
-        assert!(!board.is_wall(1, 1));
-        assert!(board.is_wall(2, 2));
+        assert!(board.is_wall_at(0, 0));
+        assert!(!board.is_wall_at(1, 1));
+        assert!(board.is_wall_at(2, 2));
     }
 
     #[test]
@@ -185,7 +185,7 @@ mod tests {
 
         for y in 0..10 {
             for x in 0..10 {
-                if board.is_wall(x, y) {
+                if board.is_wall_at(x, y) {
                     assert_eq!(board.get_cell(x, y), Some(GameObject::Wall));
                 } else {
                     assert_eq!(board.get_cell(x, y), Some(GameObject::Empty));

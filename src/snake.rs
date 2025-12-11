@@ -46,7 +46,7 @@ impl Snake {
 
         for _ in 0..distance {
             let new_head = self.new_head_position(board, self.body[0].0, self.body[0].1);
-            if board.is_wall(new_head.0, new_head.1) {
+            if board.is_wall_at(new_head.0, new_head.1) {
                 return false;
             }
 
@@ -103,6 +103,10 @@ impl Snake {
         self.body[0]
     }
 
+    pub fn is_snake_at(&self, x: usize, y: usize) -> bool {
+        self.body.iter().any(|&(sx, sy)| sx == x && sy == y)
+    }
+
     pub fn render_to_board(&self, board: &mut Board) {
         for &(x, y) in &self.body {
             board.set_cell(x, y, GameObject::Snake);
@@ -133,7 +137,6 @@ mod tests {
         let mut snake = Snake::new(5, 5);
         snake.change_direction(Key::ArrowUp);
         assert_eq!(snake.direction, Direction::Up);
-        // Try to reverse direction (should not change)
         snake.change_direction(Key::ArrowDown);
         assert_eq!(snake.direction, Direction::Up);
 
@@ -220,23 +223,37 @@ mod tests {
 
         let mut snake = Snake::new(1, 1);
         snake.speed = 5.0; // 5 blocks per second
-        assert!(snake.move_forward(&board, 200.0)); // Move to (2,1)
+        assert!(snake.move_forward(&board, 200.0));
         snake.change_direction(Key::ArrowDown);
-        assert!(!snake.move_forward(&board, 200.0)); // Move to (2,2) which is a wall
+        assert!(!snake.move_forward(&board, 200.0));
     }
 
     #[test]
     fn snake_renders_to_board_correctly() {
         let mut board = Board::new(10, 10, 1, 1);
         let mut snake = Snake::new(2, 2);
-        snake.speed = 1.0;
+        snake.speed = 2.0;
         snake.grow(2);
         let mut board = Board::new(10, 10, 1, 1);
-        snake.move_forward(&board, 1000.0); // Move to (3,2)
-        snake.move_forward(&board, 1000.0); // Move to (4,2)
+        snake.move_forward(&board, 1000.0);
         snake.render_to_board(&mut board);
         assert_eq!(board.get_cell(4, 2), Some(GameObject::Snake));
         assert_eq!(board.get_cell(3, 2), Some(GameObject::Snake));
         assert_eq!(board.get_cell(2, 2), Some(GameObject::Snake));
+    }
+
+    #[test]
+    fn snake_detects_its_own_body_correctly() {
+        let mut snake = Snake::new(5, 5);
+        snake.speed = 3.0;
+        snake.grow(3);
+        let mut board = Board::new(10, 10, 1, 1);
+        snake.move_forward(&board, 1000.0);
+
+        assert!(snake.is_snake_at(6, 5));
+        assert!(snake.is_snake_at(7, 5));
+        assert!(snake.is_snake_at(8, 5));
+        assert!(snake.is_snake_at(5, 5));
+        assert!(!snake.is_snake_at(4, 5));
     }
 }

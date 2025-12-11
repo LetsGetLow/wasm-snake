@@ -4,6 +4,7 @@ extern crate alloc;
 mod board;
 mod game;
 mod snake;
+mod food;
 
 pub use game::GameWasm;
 
