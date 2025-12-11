@@ -15,7 +15,9 @@ class Game {
     private frameCount: number = 0
     private fps: number = 0
     private lastFpsUpdate: DOMHighResTimeStamp
-    private delta_time: number = 0
+    private deltaTime: number = 0
+
+    private score: number = 0
 
     constructor(width: number, height: number, showPerformanceInfo: boolean = false) {
         this.height = height
@@ -80,7 +82,7 @@ class Game {
         // // FPS calculation
         const now = performance.now()
         this.frameCount++
-        this.delta_time = now - this.lastTime
+        this.deltaTime = now - this.lastTime
         this.lastTime = now
         if (now - this.lastFpsUpdate >= 1000) {
             this.fps = this.frameCount
@@ -89,7 +91,8 @@ class Game {
         }
 
         if (this.wasmGame) {
-            this.wasmGame.update(this.delta_time)
+            this.wasmGame.update(this.deltaTime)
+            this.score = this.wasmGame.get_score()
         }
     }
 
@@ -99,13 +102,20 @@ class Game {
         }
         const prevAlign = this.ctx.textAlign
         const prevBaseline = this.ctx.textBaseline
+
+        const smallFontSize = this.height / 50
+        this.ctx.fillStyle = 'yellow'
+        this.ctx.font = `${smallFontSize}px Arial`
+        this.ctx.textAlign = 'right'
+        this.ctx.textBaseline = 'top'
+        this.ctx.fillText(`Score: ${this.score}`, this.width - 20, 20)
+
         if (this.showPerformanceInfo) {
-            const fontSize = this.height / 50
             this.ctx.fillStyle = 'white'
-            this.ctx.font = `${fontSize}px Arial`
+            this.ctx.font = `${smallFontSize}px Arial`
             this.ctx.textAlign = 'left'
             this.ctx.textBaseline = 'top'
-            this.ctx.fillText(`FPS: ${this.fps}, Delta: ${this.delta_time}, State: ${this.wasmGame.get_game_state()}`, 20, 30)
+            this.ctx.fillText(`FPS: ${this.fps}, Delta: ${this.deltaTime}, State: ${this.wasmGame.get_game_state()}`, 20, 30)
         }
 
         const fontSize = this.width / 20
