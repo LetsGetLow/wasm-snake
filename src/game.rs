@@ -1,9 +1,10 @@
 use crate::board::Board;
 use crate::food::FoodManager;
 use crate::snake::Snake;
-use crate::{GameState, Key};
+use crate::{GameEvent, GameState, Key};
 use alloc::vec;
 use alloc::vec::Vec;
+use wasm_bindgen::JsValue;
 use wasm_bindgen::prelude::wasm_bindgen;
 
 const GRID_WIDTH: usize = 100;
@@ -21,6 +22,7 @@ pub struct GameWasm {
     snake: Snake,
     board: Board,
     food_manager: FoodManager,
+    audio_event_listener: Option<js_sys::Function>,
 }
 
 #[wasm_bindgen]
@@ -48,6 +50,7 @@ impl GameWasm {
             snake,
             board,
             food_manager,
+            audio_event_listener: None,
         }
     }
 
@@ -79,6 +82,7 @@ impl GameWasm {
         }
 
         if !self.snake.move_forward(&self.board, delta_time) {
+            self.trigger_event(GameEvent::GameOver);
             self.game_state = GameState::GameOver;
             return;
         }
@@ -90,6 +94,7 @@ impl GameWasm {
     }
 
     fn snake_eats_food(&mut self, x: usize, y: usize) {
+        self.trigger_event(GameEvent::EatFood);
         self.snake.grow(2);
         self.snake.increase_speed(SPEED_INC);
         self.food_manager.take_food(x, y);
@@ -104,6 +109,14 @@ impl GameWasm {
         self.snake.render_to_board(&mut self.board);
         self.board
             .render_to_buffer(self.screen_buffer.as_mut_slice());
+    }
+
+    fn trigger_event(&self, event: GameEvent) {
+        if let Some(callback) = &self.audio_event_listener {
+            let this = JsValue::NULL;
+            let event = JsValue::from(event);
+            let _ = callback.call1(&this, &event);
+        }
     }
 
     #[wasm_bindgen]
@@ -124,6 +137,11 @@ impl GameWasm {
             return;
         }
         self.snake.change_direction(key);
+    }
+
+    #[wasm_bindgen]
+    pub fn add_audio_event_listener(&mut self, callback: js_sys::Function) {
+        self.audio_event_listener = Some(callback);
     }
 
     #[wasm_bindgen]

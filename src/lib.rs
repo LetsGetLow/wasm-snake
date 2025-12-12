@@ -117,3 +117,9 @@ pub enum GameState {
     Paused,
     GameOver,
 }
+
+#[wasm_bindgen]
+pub enum GameEvent {
+    EatFood,
+    GameOver,
+}
