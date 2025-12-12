@@ -122,4 +122,6 @@ pub enum GameState {
 pub enum GameEvent {
     EatFood,
     GameOver,
+    GameStart,
+    GamePause,
 }

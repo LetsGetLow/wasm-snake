@@ -1,8 +1,8 @@
+use crate::{Color, GameObject};
 use alloc::boxed::Box;
 use alloc::vec;
 use alloc::vec::Vec;
 use core::error::Error;
-use crate::{Color, GameObject};
 
 type Result<T> = core::result::Result<T, Box<dyn Error>>;
 
@@ -32,12 +32,11 @@ impl Board {
     }
 
     pub fn set_level_data(&mut self, data: &[u8]) -> Result<()> {
-        let clean_data = data.iter().fold(Vec::new(), |mut acc, &b| {
-            if b != b'\n' && b != b'\r' {
-                acc.push(b);
-            }
-            acc
-        });
+        let clean_data: Vec<_> = data
+            .iter()
+            .copied()
+            .filter(|b| *b != b'\n' && *b != b'\r')
+            .collect();
 
         if clean_data.len() != self.width * self.height {
             Err("Level data size does not match board dimensions".into())
@@ -75,14 +74,17 @@ impl Board {
     }
 
     pub fn draw_level(&mut self) {
-        self.level_data.iter().enumerate().for_each(|(idx, char_byte)| {
-            let game_object = if *char_byte == b'#' {
-                GameObject::Wall
-            } else {
-                GameObject::Empty
-            };
-            self.cells[idx] = game_object;
-        });
+        self.level_data
+            .iter()
+            .enumerate()
+            .for_each(|(idx, char_byte)| {
+                let game_object = if *char_byte == b'#' {
+                    GameObject::Wall
+                } else {
+                    GameObject::Empty
+                };
+                self.cells[idx] = game_object;
+            });
     }
 
     pub fn is_wall_at(&self, x: usize, y: usize) -> bool {

@@ -63,7 +63,7 @@ class Game {
                 this.wasmGame?.key_down(e.code)
             })
 
-            this.wasmGame.add_audio_event_listener((event: GameEvent) => {
+            this.wasmGame.add_game_event_listener((event: GameEvent) => {
                 this.audioManager.playAudio(event)
             })
         }).catch((err: any) => {
@@ -137,14 +137,12 @@ class Game {
         this.ctx.textAlign = 'center'
         this.ctx.textBaseline = 'middle'
         if (GameState.GameOver === gameState) {
-            this.audioManager.stopBackgroundMusic()
             this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
             this.ctx.fillRect(0, 0, this.width, this.height)
             this.ctx.fillStyle = 'red'
             this.ctx.font = `${fontSize}px Arial`
             this.ctx.fillText('Game Over', this.width / 2, this.height / 2)
         } else if (GameState.Paused === gameState) {
-            this.audioManager.stopBackgroundMusic()
             this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
             this.ctx.fillRect(0, 0, this.width, this.height)
             this.ctx.font = `${fontSize}px Arial`
@@ -155,7 +153,6 @@ class Game {
                 this.ctx.fillStyle = 'yellow'
                 this.ctx.fillText('Paused', this.width / 2, this.height / 2)}
         } else if (GameState.Running === gameState) {
-            this.audioManager.playBackgroundMusic()
             this.started = true
         }
         this.ctx.textAlign = prevAlign

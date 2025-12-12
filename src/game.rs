@@ -11,6 +11,7 @@ const GRID_WIDTH: usize = 100;
 const GRID_HEIGHT: usize = 100;
 
 const INITIAL_SNAKE_LENGTH: usize = 5;
+const SNAKE_GROWTH_RATE: usize = 8;
 
 const SPEED_INC: f32 = 0.05;
 
@@ -22,7 +23,7 @@ pub struct GameWasm {
     snake: Snake,
     board: Board,
     food_manager: FoodManager,
-    audio_event_listener: Option<js_sys::Function>,
+    game_event_listener: Option<js_sys::Function>,
 }
 
 #[wasm_bindgen]
@@ -50,7 +51,7 @@ impl GameWasm {
             snake,
             board,
             food_manager,
-            audio_event_listener: None,
+            game_event_listener: None,
         }
     }
 
@@ -58,7 +59,7 @@ impl GameWasm {
         self.score = 0;
         self.game_state = GameState::Running;
         self.snake = Snake::new(GRID_WIDTH / 2, GRID_HEIGHT / 2);
-        self.snake.grow(INITIAL_SNAKE_LENGTH);
+        self.snake.grow(SNAKE_GROWTH_RATE);
     }
 
     #[wasm_bindgen]
@@ -112,7 +113,7 @@ impl GameWasm {
     }
 
     fn trigger_event(&self, event: GameEvent) {
-        if let Some(callback) = &self.audio_event_listener {
+        if let Some(callback) = &self.game_event_listener {
             let this = JsValue::NULL;
             let event = JsValue::from(event);
             let _ = callback.call1(&this, &event);
@@ -123,12 +124,15 @@ impl GameWasm {
     pub fn key_down(&mut self, key: &str) {
         let key = key.into();
         if (key == Key::Space) && self.game_state == GameState::Running {
+            self.trigger_event(GameEvent::GamePause);
             self.game_state = GameState::Paused;
             return;
         } else if (key == Key::Space) && self.game_state == GameState::Paused {
+            self.trigger_event(GameEvent::GameStart);
             self.game_state = GameState::Running;
             return;
         } else if (key == Key::Space) && self.game_state == GameState::GameOver {
+            self.trigger_event(GameEvent::GameStart);
             self.reset();
             return;
         }
@@ -140,8 +144,8 @@ impl GameWasm {
     }
 
     #[wasm_bindgen]
-    pub fn add_audio_event_listener(&mut self, callback: js_sys::Function) {
-        self.audio_event_listener = Some(callback);
+    pub fn add_game_event_listener(&mut self, callback: js_sys::Function) {
+        self.game_event_listener = Some(callback);
     }
 
     #[wasm_bindgen]

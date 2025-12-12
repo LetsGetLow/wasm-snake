@@ -1,4 +1,4 @@
-import type {GameEvent} from "snake-wasm";
+import {GameEvent} from "snake-wasm";
 
 class AudioManger {
     private static instance: AudioManger
@@ -7,6 +7,7 @@ class AudioManger {
     private audioBuffers: Map<GameEvent, AudioBuffer>
     private backgroundMusicBuffer: AudioBuffer | null = null
     private backgroundSource: AudioBufferSourceNode | null = null
+    private backgroundBufferOffset: number = 0;
 
     private constructor(audioFolder: string) {
         this.audioFolder = audioFolder
@@ -40,6 +41,19 @@ class AudioManger {
     }
 
     public playAudio(event: GameEvent): void {
+
+        switch (event) {
+            case GameEvent.GameOver:
+                this.stopBackgroundMusic()
+                break;
+            case GameEvent.GamePause:
+                this.pauseBackgroundMusic()
+                break;
+            case GameEvent.GameStart:
+                this.playBackgroundMusic()
+                break;
+        }
+
         const audioBuffer = this.audioBuffers.get(event)
         if (audioBuffer) {
             const source = this.ctx.createBufferSource()
@@ -49,7 +63,7 @@ class AudioManger {
         }
     }
 
-    public playBackgroundMusic(loop: boolean = true): void {
+    private playBackgroundMusic(loop: boolean = true): void {
         if (!this.backgroundMusicBuffer) {
             return
         }
@@ -66,16 +80,29 @@ class AudioManger {
         this.backgroundSource.buffer = this.backgroundMusicBuffer
         this.backgroundSource.loop = loop
         this.backgroundSource.connect(gainNode)
-        this.backgroundSource.channelInterpretation = 'discrete'
-        this.backgroundSource.start()
+        this.backgroundSource.start(0, this.backgroundBufferOffset)
+        console.log("Background music started at offset:", this.backgroundBufferOffset);
+        this.backgroundBufferOffset = 0;
     }
 
-    public stopBackgroundMusic(): void {
+    private pauseBackgroundMusic(): void {
+        if (this.backgroundSource) {
+            const elapsed = this.ctx.currentTime
+            const duration = this.backgroundSource.buffer ? this.backgroundSource.buffer.duration : 0
+            this.backgroundBufferOffset = elapsed % duration || 0;
+            this.backgroundSource.stop()
+            this.backgroundSource.disconnect()
+            this.backgroundSource = null
+        }
+    }
+
+    private stopBackgroundMusic(): void {
         if (this.backgroundSource) {
             this.backgroundSource.stop()
             this.backgroundSource.disconnect()
             this.backgroundSource = null
         }
+        this.backgroundBufferOffset = 0;
     }
 }
 
