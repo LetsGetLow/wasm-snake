@@ -12,6 +12,13 @@ to be very well optimized for WASM canvas buffer sharing.
 
 The game runs at a solid 150+ FPS in Chrome on a 2000x2000 px canvas.
 
+## Table of contents
+
+- [Features](#features)
+- [How to run the project](#how-to-run-the-project)
+- [Game Controls](#game-controls)
+- [Performance issues on Firefox](#performance-issues-on-firefox)
+
 ## Features
 
 - Classic Snake game mechanics with a twist you can go to the edge of the screen and appear
@@ -48,6 +55,13 @@ The game runs at a solid 150+ FPS in Chrome on a 2000x2000 px canvas.
    ```bash
    bun run build
    ```
+   
+## Game Controls
+- Press Space to start the game or to pause it.
+- Use the arrow keys to control the snake's direction.
+- The objective is to eat the food that appears on the screen and grow the snake.
+- Avoid colliding with the walls or the snake's own body.
+- Try to achieve the highest score possible!
 
 ## Performance issues on Firefox
 
