@@ -20,7 +20,7 @@ The game runs at a solid 150+ FPS in Chrome on a 2000x2000 px canvas.
 - Responsive controls with keyboard input
 - Delta time calculation for consistent movement speed
 - High performance with WebAssembly
-- Shared memory between Rust and TypeScript for efficient canvas rendering
+- Shared memory between Rust and TypeScript for efficient canvas update
 
 ## How to run the project
 
