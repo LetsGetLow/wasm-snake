@@ -2,15 +2,13 @@
 
 A simple Snake game implemented in WebAssembly (WASM) with a bit of TypeScript for painting the canvas, calculation of
 delta time and handling of keyboard events. The game logic is written in Rust and compiled to WASM. This project serves
-as a
-demonstration of using Rust and WebAssembly for web-based games. It is meant for testing performance of WASM to see what
-is
-possible without WegGL or wgpu.
+as a demonstration of using Rust and WebAssembly for web-based games. It is meant for testing performance of WASM to see what
+is possible without WegGL or wgpu.
 
 I used the project to test performance of WASM in the browser without WebGL or wgpu in order to see if it is possible to
 create real-time games with complex logic running in WASM in order to create a Doom clone. It turns out that it is indeed
 possible to achieve high frame rates with WASM even without hardware acceleration for rendering. Especially Chrome seems
-to be very well optimized for WASM performance.
+to be very well optimized for WASM canvas buffer sharing.
 
 The game runs at a solid 150+ FPS in Chrome on a 2000x2000 px canvas.
 
