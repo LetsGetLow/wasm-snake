@@ -1,9 +1,11 @@
+use alloc::string::String;
 use crate::board::Board;
 use crate::food::FoodManager;
 use crate::snake::Snake;
 use crate::{GameEvent, GameState, Key};
 use alloc::vec;
 use alloc::vec::Vec;
+use std::collections::HashMap;
 use wasm_bindgen::JsValue;
 use wasm_bindgen::prelude::wasm_bindgen;
 
@@ -24,6 +26,7 @@ pub struct GameWasm {
     board: Board,
     food_manager: FoodManager,
     game_event_listener: Option<js_sys::Function>,
+    levels: HashMap<&'static str, Vec<u8>>,
 }
 
 #[wasm_bindgen]
@@ -34,9 +37,14 @@ impl GameWasm {
         let cell_width = width / GRID_WIDTH;
         let cell_height = height / GRID_HEIGHT;
 
-        let level_data = include_bytes!("../assets/levels/level01.txt");
+        let levels = HashMap::from([
+            ("Board 1", include_bytes!("../assets/levels/level01.txt").to_vec()),
+            ("Board 2", include_bytes!("../assets/levels/level02.txt").to_vec()),
+            ("Board 3", include_bytes!("../assets/levels/level03.txt").to_vec()),
+        ]);
+
         let mut board = Board::new(GRID_WIDTH, GRID_HEIGHT, cell_width, cell_height);
-        board.set_level_data(level_data).unwrap();
+        board.set_level_data(levels.get("Board 1").unwrap()).unwrap();
 
         let mut snake = Snake::new(GRID_WIDTH / 2, GRID_HEIGHT / 2);
         snake.grow(INITIAL_SNAKE_LENGTH - 1);
@@ -52,6 +60,7 @@ impl GameWasm {
             board,
             food_manager,
             game_event_listener: None,
+            levels,
         }
     }
 
@@ -60,8 +69,24 @@ impl GameWasm {
         self.game_state = GameState::Running;
         self.snake = Snake::new(GRID_WIDTH / 2, GRID_HEIGHT / 2);
         self.snake.grow(SNAKE_GROWTH_RATE);
+        self.food_manager = FoodManager::new();
+        self.food_manager.spawn_food(&self.board, &self.snake);
     }
 
+    #[wasm_bindgen]
+    pub fn get_level_names(&self) -> Vec<String> {
+        self.levels.keys().map(|&k| k.to_string()).collect()
+    }
+
+    #[wasm_bindgen]
+    pub fn load_level(&mut self, level_name: &str) {
+        if let Some(level_data) = self.levels.get(level_name) {
+            self.board.set_level_data(level_data).unwrap();
+            self.reset();
+            self.game_state = GameState::Paused;
+            self.trigger_event(GameEvent::GamePause);
+        }
+    }
     #[wasm_bindgen]
     pub fn get_screen_buffer(&self) -> *const u8 {
         self.screen_buffer.as_ptr()

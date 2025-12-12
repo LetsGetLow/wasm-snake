@@ -24,7 +24,7 @@ class Game {
 
     private audioManager: AudioManger = AudioManger.getInstance();
 
-    constructor(width: number, height: number, showPerformanceInfo: boolean = false) {
+    constructor(width: number, height: number) {
         this.height = height
         this.width = width
         const canvas = this.init()
@@ -35,14 +35,18 @@ class Game {
 
         this.lastTime = performance.now()
         this.lastFpsUpdate = performance.now()
-        this.showPerformanceInfo = showPerformanceInfo
     }
 
     private init(): HTMLCanvasElement {
+        const boardPulldown = document.createElement('select')
+        document.body.appendChild(boardPulldown)
+
         const canvas = document.createElement('canvas')
         canvas.width = this.width
         canvas.height = this.height
+        canvas.tabIndex = 0
         document.body.appendChild(canvas)
+
         this.audioManager.loadAudio(GameEvent.EatFood, 'eat.mp3');
         this.audioManager.loadAudio(GameEvent.GameOver, 'gameover.mp3');
 
@@ -65,6 +69,21 @@ class Game {
 
             this.wasmGame.add_game_event_listener((event: GameEvent) => {
                 this.audioManager.playAudio(event)
+            })
+
+            this.wasmGame.get_level_names().forEach((levelName: string) => {
+                const option = document.createElement('option')
+                option.value = levelName
+                option.text = levelName
+                boardPulldown.appendChild(option)
+            })
+
+            boardPulldown.addEventListener('change', (e: Event) => {
+                const select = e.target as HTMLSelectElement
+                const levelName = select.value
+                this.wasmGame?.load_level(levelName)
+                this.started = false
+                canvas.focus()
             })
         }).catch((err: any) => {
             console.error('Error initializing WASM module:', err)
@@ -128,7 +147,7 @@ class Game {
             this.ctx.font = `${smallFontSize}px Arial`
             this.ctx.textAlign = 'left'
             this.ctx.textBaseline = 'top'
-            this.ctx.fillText(`FPS: ${this.fps}, Delta: ${this.deltaTime}, State: ${this.wasmGame.get_game_state()}`, 20, 30)
+            this.ctx.fillText(`FPS: ${this.fps}, Delta: ${this.deltaTime}`, 20, 20)
         }
 
         const fontSize = this.width / 20

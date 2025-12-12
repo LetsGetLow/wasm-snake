@@ -24,12 +24,13 @@ a:hover {
 }
 
 body {
-    margin: 0;
+    margin: 1rem;
     padding: 0;
     display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
     place-items: center;
-    min-width: 320px;
-    min-height: 100vh;
 }
 
 canvas {
