@@ -2,7 +2,7 @@ import {GameEvent} from "snake-wasm";
 
 class AudioManger {
     private static instance: AudioManger
-    private audioFolder: string
+    private readonly audioFolder: string
     private ctx: AudioContext
     private audioBuffers: Map<GameEvent, AudioBuffer>
     private backgroundMusicBuffer: AudioBuffer | null = null
@@ -81,7 +81,6 @@ class AudioManger {
         this.backgroundSource.loop = loop
         this.backgroundSource.connect(gainNode)
         this.backgroundSource.start(0, this.backgroundBufferOffset)
-        console.log("Background music started at offset:", this.backgroundBufferOffset);
         this.backgroundBufferOffset = 0;
     }
 
@@ -96,7 +95,7 @@ class AudioManger {
         }
     }
 
-    private stopBackgroundMusic(): void {
+    stopBackgroundMusic(): void {
         if (this.backgroundSource) {
             this.backgroundSource.stop()
             this.backgroundSource.disconnect()

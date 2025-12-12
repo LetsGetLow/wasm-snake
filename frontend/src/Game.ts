@@ -27,7 +27,7 @@ class Game {
     constructor(width: number, height: number) {
         this.height = height
         this.width = width
-        const canvas = this.init()
+        const canvas = this.initUI()
         this.ctx = canvas.getContext('2d')
         if (!this.ctx) {
             throw new Error('Failed to get 2D context')
@@ -37,7 +37,7 @@ class Game {
         this.lastFpsUpdate = performance.now()
     }
 
-    private init(): HTMLCanvasElement {
+    private initUI(): HTMLCanvasElement {
         const boardPulldown = document.createElement('select')
         document.body.appendChild(boardPulldown)
 
@@ -84,6 +84,7 @@ class Game {
                 this.wasmGame?.load_level(levelName)
                 this.started = false
                 canvas.focus()
+                this.audioManager?.stopBackgroundMusic()
             })
         }).catch((err: any) => {
             console.error('Error initializing WASM module:', err)
