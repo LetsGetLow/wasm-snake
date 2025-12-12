@@ -57,6 +57,7 @@ impl Board {
         }
     }
 
+    #[allow(dead_code)]
     pub fn get_cell(&self, x: usize, y: usize) -> Option<GameObject> {
         if x < self.width && y < self.height {
             let idx = self.xy_to_index(x, y);

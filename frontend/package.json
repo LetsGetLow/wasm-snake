@@ -4,9 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "preinstall": "bun build:rs",
     "clean": "rm -rf dist node_modules ../wasm",
-    "dev": "bun run build:rs && vite",
-    "build": "bun run build:rs && tsc && vite build",
+    "dev": "bun build:rs && vite",
+    "build": "bun build:rs && tsc && vite build",
     "build:rs": "wasm-pack build --release --target web --out-dir ./wasm",
     "preview": "vite preview"
   },
