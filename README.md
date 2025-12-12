@@ -35,14 +35,14 @@ The game runs at a solid 150+ FPS in Chrome on a 2000x2000 px canvas.
 5. Navigate to the project directory and into the frontend folder.
 4. Install dependencies using bun:
    ```bash
-   bun install
+   bun setup
    ```
 5. Build the project:
    You have two options to build the project:
 
    run the dev environment with hot reloading
    ```bash
-   bun run dev
+   bun dev
    ```
    or just build to run a static server (need to run on a server to load WASM properly):
    ```bash

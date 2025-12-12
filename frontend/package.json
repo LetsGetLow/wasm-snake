@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "preinstall": "bun build:rs",
+    "setup": "bun build:rs && bun install",
     "clean": "rm -rf dist node_modules ../wasm",
     "dev": "bun build:rs && vite",
     "build": "bun build:rs && tsc && vite build",
