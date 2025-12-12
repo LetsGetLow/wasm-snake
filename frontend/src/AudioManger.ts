@@ -1,12 +1,15 @@
 import {GameEvent} from "snake-wasm";
 
+/**
+ * Singleton class to manage audio playback
+ */
 class AudioManger {
     private static instance: AudioManger
     private readonly audioFolder: string
     private ctx: AudioContext
     private audioBuffers: Map<GameEvent, AudioBuffer>
     private backgroundMusicBuffer: AudioBuffer | null = null
-    private backgroundSource: AudioBufferSourceNode | null = null
+    private backgroundMusicSource: AudioBufferSourceNode | null = null
     private backgroundBufferOffset: number = 0;
 
     private constructor(audioFolder: string) {
@@ -68,7 +71,7 @@ class AudioManger {
             return
         }
 
-        if (this.backgroundSource) {
+        if (this.backgroundMusicSource) {
             return
         }
 
@@ -76,30 +79,30 @@ class AudioManger {
         gainNode.gain.value = 0.2
         gainNode.connect(this.ctx.destination)
 
-        this.backgroundSource = this.ctx.createBufferSource()
-        this.backgroundSource.buffer = this.backgroundMusicBuffer
-        this.backgroundSource.loop = loop
-        this.backgroundSource.connect(gainNode)
-        this.backgroundSource.start(0, this.backgroundBufferOffset)
+        this.backgroundMusicSource = this.ctx.createBufferSource()
+        this.backgroundMusicSource.buffer = this.backgroundMusicBuffer
+        this.backgroundMusicSource.loop = loop
+        this.backgroundMusicSource.connect(gainNode)
+        this.backgroundMusicSource.start(0, this.backgroundBufferOffset)
         this.backgroundBufferOffset = 0;
     }
 
     private pauseBackgroundMusic(): void {
-        if (this.backgroundSource) {
+        if (this.backgroundMusicSource) {
             const elapsed = this.ctx.currentTime
-            const duration = this.backgroundSource.buffer ? this.backgroundSource.buffer.duration : 0
+            const duration = this.backgroundMusicSource.buffer ? this.backgroundMusicSource.buffer.duration : 0
             this.backgroundBufferOffset = elapsed % duration || 0;
-            this.backgroundSource.stop()
-            this.backgroundSource.disconnect()
-            this.backgroundSource = null
+            this.backgroundMusicSource.stop()
+            this.backgroundMusicSource.disconnect()
+            this.backgroundMusicSource = null
         }
     }
 
     stopBackgroundMusic(): void {
-        if (this.backgroundSource) {
-            this.backgroundSource.stop()
-            this.backgroundSource.disconnect()
-            this.backgroundSource = null
+        if (this.backgroundMusicSource) {
+            this.backgroundMusicSource.stop()
+            this.backgroundMusicSource.disconnect()
+            this.backgroundMusicSource = null
         }
         this.backgroundBufferOffset = 0;
     }
