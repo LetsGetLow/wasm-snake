@@ -4,6 +4,7 @@ description = "A simple Snake game implemented in Rust and compiled to WebAssemb
 license = "MIT"
 version = "0.1.0"
 edition = "2024"
+repository = "https://github.com/LetsGetLow/wasm-snake"
 
 [dependencies]
 fastrand = "2.3.0"
