@@ -1,4 +1,3 @@
-use alloc::vec::Vec;
 use crate::board::Board;
 use crate::GameObject;
 use crate::snake::Snake;
@@ -95,17 +94,8 @@ mod tests {
     #[test]
     fn food_manager_spawns_food_randomly() {
         let mut board = Board::new(10, 10, 1, 1);
-        let level_data = b"##########
-#        #
-#  ##    #
-#        #
-#        #
-#    ##  #
-#        #
-#        #
-#        #
-##########";
-        board.set_level_data(level_data);
+        let level_data = b"###########        ##  ##    ##        ##        ##    ##  ##        ##        ##        ###########".to_vec();
+        board.set_level_data(&level_data);
         let mut snake = Snake::new(1, 1);
         snake.grow(5);
 

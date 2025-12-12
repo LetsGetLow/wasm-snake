@@ -1,6 +1,6 @@
+use std::collections::VecDeque;
 use crate::board::Board;
 use crate::{Direction, GameObject, Key};
-use alloc::collections::VecDeque;
 
 const INITIAL_SPEED: f32 = 5.0; // cells per second
 const MAX_SPEED: f32 = 40.0; // cells per second
@@ -175,7 +175,7 @@ mod tests {
 
     #[test]
     fn snake_moves_forward_correctly() {
-        let mut board = Board::new(10, 10, 1, 1);
+        let board = Board::new(10, 10, 1, 1);
         let mut snake = Snake::new(5, 5);
         snake.speed = 5.0; // 5 blocks per second
         snake.move_forward(&board, 200.0); // 200
@@ -196,7 +196,7 @@ mod tests {
 
     #[test]
     fn snake_head_show_up_on_the_opposite_side_if_leave_board() {
-        let mut board = Board::new(10, 10, 1, 1);
+        let board = Board::new(10, 10, 1, 1);
         let mut snake = Snake::new(9, 0);
         snake.speed = 5.0; // 5 blocks per second
         snake.move_forward(&board, 200.0);
@@ -223,7 +223,7 @@ mod tests {
 
         assert_eq!(snake.grow_pending, 3);
 
-        let mut board = Board::new(10, 10, 1, 1);
+        let board = Board::new(10, 10, 1, 1);
         snake.move_forward(&board, 1000.0); // Move 5 blocks
         assert_eq!(snake.body.len(), 4); // Initial + 3 grown
     }
@@ -231,12 +231,8 @@ mod tests {
     #[test]
     fn snake_detects_wall_collision() {
         let mut board = Board::new(5, 5, 1, 1);
-        let level_data = b"#####
-#   #
-# # #
-#   #
-#####";
-        board.set_level_data(level_data).unwrap();
+        let level_data = b"######   ## # ##   ######".to_vec();
+        board.set_level_data(&level_data);
 
         let mut snake = Snake::new(1, 1);
         snake.speed = 5.0; // 5 blocks per second
@@ -247,7 +243,7 @@ mod tests {
 
     #[test]
     fn snake_detects_self_collision() {
-        let mut board = Board::new(10, 10, 1, 1);
+        let board = Board::new(10, 10, 1, 1);
         let mut snake = Snake::new(5, 5);
         snake.speed = 1.0;
         snake.grow(4); // Grow to length 5
@@ -267,7 +263,6 @@ mod tests {
 
     #[test]
     fn snake_renders_to_board_correctly() {
-        let board = Board::new(10, 10, 1, 1);
         let mut snake = Snake::new(2, 2);
         snake.speed = 2.0;
         snake.grow(2);
@@ -284,7 +279,7 @@ mod tests {
         let mut snake = Snake::new(5, 5);
         snake.speed = 3.0;
         snake.grow(3);
-        let mut board = Board::new(10, 10, 1, 1);
+        let board = Board::new(10, 10, 1, 1);
         snake.move_forward(&board, 1000.0);
 
         assert!(snake.is_snake_at(6, 5));

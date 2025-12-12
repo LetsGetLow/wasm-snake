@@ -1,11 +1,10 @@
-extern crate alloc;
+pub use game::GameWasm;
 
 mod board;
 mod game;
 mod snake;
 mod food;
-
-pub use game::GameWasm;
+mod level;
 
 use wasm_bindgen::prelude::*;
 

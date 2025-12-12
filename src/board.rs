@@ -1,10 +1,5 @@
 use crate::{Color, GameObject};
-use alloc::boxed::Box;
-use alloc::vec;
-use alloc::vec::Vec;
-use core::error::Error;
-
-type Result<T> = core::result::Result<T, Box<dyn Error>>;
+use crate::level::Level;
 
 #[derive(PartialEq)]
 pub struct Board {
@@ -31,19 +26,8 @@ impl Board {
         }
     }
 
-    pub fn set_level_data(&mut self, data: &[u8]) -> Result<()> {
-        let clean_data: Vec<_> = data
-            .iter()
-            .copied()
-            .filter(|b| *b != b'\n' && *b != b'\r')
-            .collect();
-
-        if clean_data.len() != self.width * self.height {
-            Err("Level data size does not match board dimensions".into())
-        } else {
-            self.level_data = clean_data;
-            Ok(())
-        }
+    pub fn set_level_data(&mut self, level: &Level) {
+            self.level_data = level.to_owned();
     }
 
     fn xy_to_index(&self, x: usize, y: usize) -> usize {
@@ -146,24 +130,10 @@ mod tests {
     }
 
     #[test]
-    fn board_fails_on_invalid_level_data() {
-        let mut board = Board::new(5, 5, 2, 2);
-        let invalid_level_data = b"#####
-#   #
-# # #"; // too short
-        let result = board.set_level_data(invalid_level_data);
-        assert!(result.is_err());
-    }
-
-    #[test]
     fn board_can_detect_wall_collision() {
         let mut board = Board::new(5, 5, 2, 2);
-        let level_data = b"#####
-#   #
-# # #
-#   #
-#####";
-        board.set_level_data(level_data).unwrap();
+        let level_data = b"######   ## # ##   ######".to_vec();
+        board.set_level_data(&level_data);
         assert!(board.is_wall_at(0, 0));
         assert!(!board.is_wall_at(1, 1));
         assert!(board.is_wall_at(2, 2));
@@ -172,18 +142,8 @@ mod tests {
     #[test]
     fn board_draws_level_correctly() {
         let mut board = Board::new(10, 10, 2, 2);
-        let level_data = b"##########
-#        #
-#  ##    #
-#        #
-#        #
-#    ##  #
-#        #
-#        #
-#        #
-##########";
-
-        board.set_level_data(level_data).unwrap();
+        let level_data = b"###########        ##  ##    ##        ##        ##    ##  ##        ##        ##        ###########".to_vec();
+        board.set_level_data(&level_data);
         board.draw_level();
 
         for y in 0..10 {

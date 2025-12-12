@@ -1,13 +1,10 @@
-use alloc::string::String;
 use crate::board::Board;
 use crate::food::FoodManager;
+use crate::level::LevelManager;
 use crate::snake::Snake;
 use crate::{GameEvent, GameState, Key};
-use alloc::vec;
-use alloc::vec::Vec;
-use std::collections::HashMap;
-use wasm_bindgen::JsValue;
 use wasm_bindgen::prelude::wasm_bindgen;
+use wasm_bindgen::JsValue;
 
 const GRID_WIDTH: usize = 100;
 const GRID_HEIGHT: usize = 100;
@@ -26,7 +23,7 @@ pub struct GameWasm {
     board: Board,
     food_manager: FoodManager,
     game_event_listener: Option<js_sys::Function>,
-    levels: HashMap<&'static str, Vec<u8>>,
+    level_manager: LevelManager<'static>,
 }
 
 #[wasm_bindgen]
@@ -37,14 +34,14 @@ impl GameWasm {
         let cell_width = width / GRID_WIDTH;
         let cell_height = height / GRID_HEIGHT;
 
-        let levels = HashMap::from([
-            ("Board 1", include_bytes!("../assets/levels/level01.txt").to_vec()),
-            ("Board 2", include_bytes!("../assets/levels/level02.txt").to_vec()),
-            ("Board 3", include_bytes!("../assets/levels/level03.txt").to_vec()),
-        ]);
+        let mut level_manager = LevelManager::new(GRID_WIDTH * GRID_HEIGHT);
+        level_manager.add_level("Board 1", include_bytes!("../assets/levels/level01.txt")).unwrap();
+        level_manager.add_level("Board 2", include_bytes!("../assets/levels/level02.txt")).unwrap();
+        level_manager.add_level("Board 3", include_bytes!("../assets/levels/level03.txt")).unwrap();
 
         let mut board = Board::new(GRID_WIDTH, GRID_HEIGHT, cell_width, cell_height);
-        board.set_level_data(levels.get("Board 1").unwrap()).unwrap();
+        let starting_level = level_manager.get_level("Board 1").unwrap();
+        board.set_level_data(starting_level);
 
         let mut snake = Snake::new(GRID_WIDTH / 2, GRID_HEIGHT / 2);
         snake.grow(INITIAL_SNAKE_LENGTH - 1);
@@ -59,8 +56,8 @@ impl GameWasm {
             snake,
             board,
             food_manager,
+            level_manager,
             game_event_listener: None,
-            levels,
         }
     }
 
@@ -75,13 +72,13 @@ impl GameWasm {
 
     #[wasm_bindgen]
     pub fn get_level_names(&self) -> Vec<String> {
-        self.levels.keys().map(|&k| k.to_string()).collect()
+        self.level_manager.get_level_names()
     }
 
     #[wasm_bindgen]
     pub fn load_level(&mut self, level_name: &str) {
-        if let Some(level_data) = self.levels.get(level_name) {
-            self.board.set_level_data(level_data).unwrap();
+        if let Some(level_data) = self.level_manager.get_level(level_name) {
+            self.board.set_level_data(level_data);
             self.reset();
             self.game_state = GameState::Paused;
             self.trigger_event(GameEvent::GamePause);
