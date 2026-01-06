@@ -5,6 +5,7 @@ type Result<T> = std::result::Result<T, Error>;
 
 pub type Level = Vec<u8>;
 
+/// Manages multiple game levels.
 pub struct LevelManager<'a> {
     level_size: usize,
     levels: IndexMap<&'a str, Level>,
@@ -18,11 +19,14 @@ impl<'a> LevelManager<'a> {
         }
     }
 
+    /// Retrieves a level by its name.
     pub fn get_level<'b>(&self, level_name: &str) -> Option<&Level> {
         self.levels.get(level_name)
     }
 
+    /// Adds a new level with the specified name and data.
     pub fn add_level(&mut self, level_name: &'a str, level_data: &[u8]) -> Result<()>   {
+        // Cleans the level data by removing line breaks.
         let level_data: Level = level_data
             .into_iter()
             .filter(|b| **b != b'\n' && **b != b'\r')

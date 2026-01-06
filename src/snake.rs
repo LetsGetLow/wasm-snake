@@ -5,6 +5,7 @@ use crate::{Direction, GameObject, Key};
 const INITIAL_SPEED: f32 = 5.0; // cells per second
 const MAX_SPEED: f32 = 40.0; // cells per second
 
+/// Represents the snake in the game.
 pub struct Snake {
     body: VecDeque<(usize, usize)>,
     direction: Direction,
@@ -24,6 +25,7 @@ impl Snake {
         }
     }
 
+    /// Increases the snake's speed by the specified increment, up to the maximum speed.
     pub fn increase_speed(&mut self, increment: f32) {
         self.speed += increment;
         if self.speed > MAX_SPEED {
@@ -32,6 +34,7 @@ impl Snake {
         }
     }
 
+    /// Changes the snake's direction based on the input key.
     pub fn change_direction(&mut self, key: Key) {
         let new_direction: Direction = key.into();
         // Prevent the snake from reversing
@@ -46,6 +49,7 @@ impl Snake {
         self.direction = new_direction;
     }
 
+    /// Moves the snake forward based on its speed and the elapsed time.
     pub fn move_forward(&mut self, board: &Board, delta_miliseconds: f32) -> bool {
         let delta_secconds = delta_miliseconds / 1000.0;
         self.movement_accumulator += self.speed * delta_secconds;
@@ -78,6 +82,7 @@ impl Snake {
         true
     }
 
+    /// Calculates the new head position based on the current direction and board boundaries.
     fn new_head_position(&mut self, board: &Board, head_x: usize, head_y: usize) -> (usize, usize) {
         match self.direction {
             Direction::Up => {
@@ -112,18 +117,22 @@ impl Snake {
         }
     }
 
+    /// Increases the length of the snake by the specified number of blocks.
     pub fn grow(&mut self, num_blocks: usize) {
         self.grow_pending += num_blocks;
     }
 
+    /// Returns the current position of the snake's head.
     pub fn get_head_pos(&self) -> (usize, usize) {
         self.body[0]
     }
 
+    /// Checks if the snake occupies the specified (x, y) coordinates.
     pub fn is_snake_at(&self, x: usize, y: usize) -> bool {
         self.body.iter().any(|&(sx, sy)| sx == x && sy == y)
     }
 
+    /// Renders the snake onto the game board.
     pub fn render_to_board(&self, board: &mut Board) {
         for &(x, y) in &self.body {
             board.set_cell(x, y, GameObject::Snake);

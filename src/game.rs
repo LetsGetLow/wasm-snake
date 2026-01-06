@@ -14,6 +14,7 @@ const SNAKE_GROWTH_RATE: usize = 8;
 
 const SPEED_INC: f32 = 0.05;
 
+/// The main game structure exposed to WebAssembly.
 #[wasm_bindgen]
 pub struct GameWasm {
     score: u32,
@@ -35,6 +36,7 @@ impl GameWasm {
         let cell_height = height / GRID_HEIGHT;
 
         let mut level_manager = LevelManager::new(GRID_WIDTH * GRID_HEIGHT);
+        // errors should crash the game at startup. They indicate a missing or malformed level file.
         level_manager.add_level("Board 1", include_bytes!("../assets/levels/level01.txt")).unwrap();
         level_manager.add_level("Board 2", include_bytes!("../assets/levels/level02.txt")).unwrap();
         level_manager.add_level("Board 3", include_bytes!("../assets/levels/level03.txt")).unwrap();
@@ -61,6 +63,7 @@ impl GameWasm {
         }
     }
 
+    /// Resets the game to its initial state.
     fn reset(&mut self) {
         self.score = 0;
         self.game_state = GameState::Running;
@@ -70,11 +73,13 @@ impl GameWasm {
         self.food_manager.spawn_food(&self.board, &self.snake);
     }
 
+    /// loads the available level names
     #[wasm_bindgen]
     pub fn get_level_names(&self) -> Vec<String> {
         self.level_manager.get_level_names()
     }
 
+    /// loads a level by name
     #[wasm_bindgen]
     pub fn load_level(&mut self, level_name: &str) {
         if let Some(level_data) = self.level_manager.get_level(level_name) {
@@ -84,20 +89,25 @@ impl GameWasm {
             self.trigger_event(GameEvent::GamePause);
         }
     }
+
+    /// Returns a pointer to the screen buffer for rendering.
     #[wasm_bindgen]
     pub fn get_screen_buffer(&self) -> *const u8 {
         self.screen_buffer.as_ptr()
     }
 
+    /// Updates the player's score.
     fn update_score(&mut self, points: u32) {
         self.score += points;
     }
 
+    /// Returns the current score.
     #[wasm_bindgen]
     pub fn get_score(&self) -> u32 {
         self.score
     }
 
+    /// Updates the game state based on the elapsed time.
     #[wasm_bindgen]
     pub fn update(&mut self, delta_time: f32) {
         if self.game_state != GameState::Running {
@@ -116,6 +126,7 @@ impl GameWasm {
         }
     }
 
+    /// Handles the event when the snake eats food.
     fn snake_eats_food(&mut self, x: usize, y: usize) {
         self.trigger_event(GameEvent::EatFood);
         self.snake.grow(2);
@@ -125,6 +136,7 @@ impl GameWasm {
         self.food_manager.spawn_food(&self.board, &self.snake);
     }
 
+    /// Renders the current game state to the screen buffer.
     #[wasm_bindgen]
     pub fn render(&mut self) {
         self.board.draw_level();
@@ -134,6 +146,7 @@ impl GameWasm {
             .render_to_buffer(self.screen_buffer.as_mut_slice());
     }
 
+    /// Triggers a game event by calling the registered callback.
     fn trigger_event(&self, event: GameEvent) {
         if let Some(callback) = &self.game_event_listener {
             let this = JsValue::NULL;
@@ -142,6 +155,7 @@ impl GameWasm {
         }
     }
 
+    /// Handles key down events to control the snake and game state.
     #[wasm_bindgen]
     pub fn key_down(&mut self, key: &str) {
         let key = key.into();
@@ -165,21 +179,25 @@ impl GameWasm {
         self.snake.change_direction(key);
     }
 
+    /// Registers a callback function to listen for game events.
     #[wasm_bindgen]
     pub fn add_game_event_listener(&mut self, callback: js_sys::Function) {
         self.game_event_listener = Some(callback);
     }
 
+    /// Returns the width of the game board.
     #[wasm_bindgen]
     pub fn get_board_width(&self) -> usize {
         self.board.get_width()
     }
 
+    /// Returns the height of the game board.
     #[wasm_bindgen]
     pub fn get_board_height(&self) -> usize {
         self.board.get_height()
     }
 
+    /// Returns the current state of the game.
     #[wasm_bindgen]
     pub fn get_game_state(&self) -> GameState {
         self.game_state

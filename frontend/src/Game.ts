@@ -1,6 +1,9 @@
 import init, {GameEvent, GameState, GameWasm} from "snake-wasm"
 import AudioManger from "./AudioManger.ts";
 
+/**
+ * Main Game class
+ */
 class Game {
     private readonly width: number
     private readonly height: number
@@ -100,10 +103,14 @@ class Game {
         return new ImageData(buf, this.width, this.height)
     }
 
+    // Enable or disable performance info display
     public setShowPerformanceInfo(show: boolean = true): void {
         this.showPerformanceInfo = show
     }
 
+    /**
+     * Main game loop
+     */
     public async run(): Promise<void> {
         while (true) {
             this.update()

@@ -2,6 +2,7 @@ use crate::{Color, GameObject};
 use crate::level::Level;
 
 #[derive(PartialEq)]
+/// Represents the game board.
 pub struct Board {
     width: usize,
     height: usize,
@@ -12,6 +13,7 @@ pub struct Board {
 }
 
 impl Board {
+    /// initializes a new Board with the specified dimensions and cell sizes.
     pub fn new(width: usize, height: usize, cell_width: usize, cell_height: usize) -> Self {
         let size = width * height;
         let cells = vec![GameObject::Empty; size];
@@ -26,14 +28,17 @@ impl Board {
         }
     }
 
+    /// Sets the level data for the board.
     pub fn set_level_data(&mut self, level: &Level) {
             self.level_data = level.to_owned();
     }
 
+    /// Converts (x, y) coordinates to a linear index in the cells vector.
     fn xy_to_index(&self, x: usize, y: usize) -> usize {
         x + y * self.width
     }
 
+    /// Sets the cell at the specified (x, y) coordinates to the given GameObject.
     pub fn set_cell(&mut self, x: usize, y: usize, value: GameObject) {
         if x < self.width && y < self.height {
             let idx = self.xy_to_index(x, y);
@@ -41,7 +46,10 @@ impl Board {
         }
     }
 
-    #[allow(dead_code)]
+    /// Gets the GameObject at the specified (x, y) coordinates.
+    /// only for testing purposes.
+    /// Returns None if the coordinates are out of bounds.
+    #[cfg(test)]
     pub fn get_cell(&self, x: usize, y: usize) -> Option<GameObject> {
         if x < self.width && y < self.height {
             let idx = self.xy_to_index(x, y);
@@ -51,13 +59,17 @@ impl Board {
         }
     }
 
+    /// Returns the width of the board.
     pub fn get_width(&self) -> usize {
         self.width
     }
+
+    /// Returns the height of the board.
     pub fn get_height(&self) -> usize {
         self.height
     }
 
+    /// Draws the level onto the board based on the level data.
     pub fn draw_level(&mut self) {
         self.level_data
             .iter()
@@ -72,12 +84,15 @@ impl Board {
             });
     }
 
+    /// Checks if there is a wall at the specified (x, y) coordinates.
     pub fn is_wall_at(&self, x: usize, y: usize) -> bool {
         let idx = self.xy_to_index(x, y);
         self.level_data[idx] == b'#'
     }
 
+    /// Renders the board to a pixel buffer.
     pub fn render_to_buffer(&mut self, buffer: &mut [u8]) {
+        // TODO: add bounds checking for buffer size
         for y in 0..self.height {
             for x in 0..self.width {
                 let idx = self.xy_to_index(x, y);

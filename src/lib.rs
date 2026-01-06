@@ -10,12 +10,12 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(start)]
 pub fn start() {
-    // Zeigt Rust-Panic-Meldungen in der Browser-Konsole an
     console_error_panic_hook::set_once();
 }
 
 #[derive(Debug, PartialEq)]
 #[wasm_bindgen]
+/// Represents keys that can be pressed by the user.
 pub enum Key {
     ArrowUp,
     ArrowDown,
@@ -41,6 +41,7 @@ impl From<&str> for Key {
 
 #[derive(Debug, PartialEq)]
 #[wasm_bindgen]
+/// Represents movement directions for the snake.
 pub enum Direction {
     Up,
     Down,
@@ -101,6 +102,7 @@ impl From<GameObject> for Color {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
+/// Represents different objects that can exist on the game board.
 pub enum GameObject {
     Snake,
     Food,
@@ -110,6 +112,7 @@ pub enum GameObject {
 
 #[derive(Clone, Copy, PartialEq)]
 #[wasm_bindgen]
+/// Represents the current state of the game.
 pub enum GameState {
     Running,
     Paused,
@@ -117,6 +120,7 @@ pub enum GameState {
 }
 
 #[wasm_bindgen]
+/// Represents different events that can occur in the game.
 pub enum GameEvent {
     EatFood,
     GameOver,

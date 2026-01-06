@@ -2,6 +2,7 @@ use crate::board::Board;
 use crate::GameObject;
 use crate::snake::Snake;
 
+/// Represents a food item on the game board.
 struct Food {
     pub x: usize,
     pub y: usize,
@@ -13,6 +14,8 @@ impl Food {
     }
 }
 
+
+/// Manages food items on the game board.
 pub struct FoodManager {
     foods: Vec<Food>,
 }
@@ -22,24 +25,29 @@ impl FoodManager {
         FoodManager { foods: Vec::new() }
     }
 
+    /// Adds a food item at the specified (x, y) coordinates.
     fn add_food(&mut self, x: usize, y: usize) {
         self.foods.push(Food::new(x, y));
     }
 
+    /// takes (removes) the food item at the specified (x, y) coordinates.
     pub fn take_food(&mut self, x: usize, y: usize) {
         self.foods.retain(|food| food.x != x || food.y != y);
     }
 
+    /// Checks if there is a food item at the specified (x, y) coordinates.
     pub fn is_food_at(&self, x: usize, y: usize) -> bool {
         self.foods.iter().any(|food| food.x == x && food.y == y)
     }
 
+    /// Renders all food items onto the game board.
     pub fn render_foods_to_board(&self, board: &mut Board) {
         for food in &self.foods {
             board.set_cell(food.x, food.y, GameObject::Food);
         }
     }
 
+    /// Spawns a new food item at a random position on the board that is not occupied by walls or the snake.
     pub fn spawn_food(&mut self, board: &Board, snake: &Snake) {
         loop {
             let x = fastrand::usize(0..board.get_width());
