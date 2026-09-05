@@ -30,7 +30,6 @@ impl Snake {
         self.speed += increment;
         if self.speed > MAX_SPEED {
             self.speed = MAX_SPEED;
-            return;
         }
     }
 

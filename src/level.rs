@@ -20,7 +20,7 @@ impl<'a> LevelManager<'a> {
     }
 
     /// Retrieves a level by its name.
-    pub fn get_level<'b>(&self, level_name: &str) -> Option<&Level> {
+    pub fn get_level(&self, level_name: &str) -> Option<&Level> {
         self.levels.get(level_name)
     }
 
@@ -28,7 +28,7 @@ impl<'a> LevelManager<'a> {
     pub fn add_level(&mut self, level_name: &'a str, level_data: &[u8]) -> Result<()>   {
         // Cleans the level data by removing line breaks.
         let level_data: Level = level_data
-            .into_iter()
+            .iter()
             .filter(|b| **b != b'\n' && **b != b'\r')
             .copied()
             .collect();
